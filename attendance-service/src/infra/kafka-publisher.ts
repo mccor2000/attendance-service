@@ -13,8 +13,7 @@ export class KafkaPublisher implements IPublisher {
 
     async produce(message: any) {
         this.messagePool.push({ value: message })
-        if (this.messagePool.length === 3000) {
-            console.log('publishing...')
+        if (this.messagePool.length === 1000) {
             this.publish()
             this.messagePool = []
         }

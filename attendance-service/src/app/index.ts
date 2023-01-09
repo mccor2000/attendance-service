@@ -11,8 +11,6 @@ import { CreateAttendanceRequest, UploadImageRequest, UploadImageResponse } from
 import { ICreateAttendance } from "../core/domain";
 
 export type FastifyWithDecorators = FastifyInstance & {
-  // authenticate: onRequestAsyncHookHandler,
-  // adminOnly: onRequestAsyncHookHandler,
   repo: IRepo
   publisher: IPublisher,
 }

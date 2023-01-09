@@ -25,10 +25,6 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
     const client = new Kafka({
         clientId: 'attendance-service',
         brokers: ['127.0.0.1:9092'],
-        retry: {
-            initialRetryTime: 100,
-            retries: 8
-        },
         logLevel: logLevel.INFO
     })
 
@@ -48,6 +44,10 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
 
     const producer = client.producer({
         allowAutoTopicCreation: false,
+        retry: {
+            retries: 3,
+            initialRetryTime: 3000
+        },
         transactionTimeout: 30000
     })
     await producer.connect()

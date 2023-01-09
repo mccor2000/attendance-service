@@ -14,7 +14,7 @@ export const createAttendanceHandler = async (
     try {
         const attd = await createAttendance(repo, body)
 
-        await repo.save(attd)
+        repo.save(attd)
         publisher.produce(JSON.stringify(attd))
 
         return reply.send()
