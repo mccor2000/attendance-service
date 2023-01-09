@@ -7,7 +7,7 @@ import jwt from '@fastify/jwt';
 import { AttendanceRepo } from '../infra/redis-repo';
 import { KafkaPublisher } from '../infra/kafka-publisher';
 import { IRepo } from '../core/ports';
-import { KAFKA_TOPIC } from '../utils/constants';
+import { KAFKA_CLIENT_ID, KAFKA_TOPIC } from '../utils/constants';
 
 export const auth = fp(async (fastify: FastifyInstance, _opts) => {
     fastify.register(jwt, { secret: 'secret' })
@@ -23,7 +23,7 @@ export const auth = fp(async (fastify: FastifyInstance, _opts) => {
 
 export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
     const client = new Kafka({
-        clientId: 'attendance-service',
+        clientId: KAFKA_CLIENT_ID,
         brokers: ['127.0.0.1:9092'],
         logLevel: logLevel.INFO
     })
