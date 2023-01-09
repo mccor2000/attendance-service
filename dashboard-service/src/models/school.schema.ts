@@ -5,14 +5,21 @@ export type SchoolDocument = HydratedDocument<School>
 
 @Schema({ collection: 'schools' })
 export class School {
-    @Prop({ required: true })
+    @Prop()
     name: string
+
+    @Prop({ type: Object })
+    liveReport: {
+        totalCheckIns: number,
+        totalCheckOuts: number,
+        totalFeversDetect: number
+    }
 
     @Prop({ default: [] })
     reports: {
         date: Date,
-        present: number
-        absent: number,
+        totalCheckIns: number,
+        totalCheckOuts: number,
         totalFeversDetect: number
     }[]
 }

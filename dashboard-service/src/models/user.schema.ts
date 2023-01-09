@@ -13,7 +13,7 @@ export class User {
         type: string,
         timestamp: number,
         temperature: number,
-        picture: string,
+        image: string,
     }[]
 
     @Prop({ type: SchemaTypes.ObjectId, ref: 'School'})
