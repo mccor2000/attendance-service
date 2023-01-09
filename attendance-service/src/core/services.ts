@@ -2,7 +2,7 @@ import { AttendanceType, ICreateAttendance, UserAlreadyCheckedInException, UserA
 import { IRepo } from "./ports";
 
 export const createAttendance = async (repo: IRepo, data: ICreateAttendance) => {
-    const isCheckedIn = await repo.isCheckedIn(data.userId, data.schoolId)
+    const isCheckedIn = await repo.isCheckedIn(data.userId)
     if (data.type === AttendanceType.CHECKIN && isCheckedIn) {
         throw new UserAlreadyCheckedInException()
     }
@@ -10,7 +10,7 @@ export const createAttendance = async (repo: IRepo, data: ICreateAttendance) => 
         if (!isCheckedIn) {
             throw new UserHaveNotCheckedInException()
         }
-        const isCheckedOut = await repo.isCheckedOut(data.userId, data.schoolId)
+        const isCheckedOut = await repo.isCheckedOut(data.userId)
         if (isCheckedOut) {
             throw new UserAlreadyCheckedOutException()
         }

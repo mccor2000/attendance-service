@@ -1,6 +1,6 @@
 export interface IRepo {
-    isCheckedIn(userId: string, schoolId: string): Promise<boolean>
-    isCheckedOut(userId: string, schoolId: string): Promise<boolean>
+    isCheckedIn(userId: string): Promise<boolean>
+    isCheckedOut(userId: string): Promise<boolean>
     save(attendance: any): Promise<void>
 }
 

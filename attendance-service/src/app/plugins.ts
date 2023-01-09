@@ -12,13 +12,13 @@ import { KAFKA_CLIENT_ID, KAFKA_TOPIC } from '../utils/constants';
 export const auth = fp(async (fastify: FastifyInstance, _opts) => {
     fastify.register(jwt, { secret: 'secret' })
 
-    // fastify.addHook("onRequest", async (request, reply) => {
-    //     try {
-    //         await request.jwtVerify()
-    //     } catch (err) {
-    //         reply.send(err)
-    //     }
-    // })
+    fastify.addHook("onRequest", async (request, reply) => {
+        try {
+            await request.jwtVerify()
+        } catch (err) {
+            reply.send(err)
+        }
+    })
 })
 
 export const publisher = fp(async (fastify: FastifyInstance, _opts) => {

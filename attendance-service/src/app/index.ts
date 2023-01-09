@@ -37,7 +37,7 @@ export const bootstrap = async () => {
 const usePlugins = async (fastify: FastifyInstance) => {
   fastify.register(cors)
   fastify.register(helmet)
-  fastify.register(auth)
+  // fastify.register(auth)
   fastify.register(repo)
   fastify.register(publisher)
   fastify.register(multipart, {
@@ -62,10 +62,5 @@ const useRouter = (fastify: FastifyWithDecorators) => {
     method: 'POST',
     url: '/upload/image',
     handler: (request, reply) => uploadImageHandler(fastify, request, reply),
-  })
-  fastify.route({
-    method: 'GET',
-    url: '/reports',
-    handler: (request, reply) => { }
   })
 }

@@ -10,10 +10,14 @@ export class AttendanceRepo implements IRepo {
     private bulk: Bulk<Record>
 
     constructor(private readonly client: Redis) {
-        this.bulk = new Bulk(3000, this.pipeline.bind(this))
+        this.bulk = new Bulk(
+            3000, 
+            5 * 1000, 
+            this.pipeline.bind(this)
+        )
     }
 
-    async isCheckedIn(userId: string, schoolId: string): Promise<boolean> {
+    async isCheckedIn(userId: string): Promise<boolean> {
         const [key, field] = this.key({
             type: AttendanceType.CHECKIN,
             userId
@@ -21,7 +25,7 @@ export class AttendanceRepo implements IRepo {
         return await this.client.hexists(key, field) === 1
     }
 
-    async isCheckedOut(userId: string, schoolId: string): Promise<boolean> {
+    async isCheckedOut(userId: string): Promise<boolean> {
         const [key, field] = this.key({
             type: AttendanceType.CHECKOUT,
             userId
@@ -44,7 +48,15 @@ export class AttendanceRepo implements IRepo {
         records.forEach(r => {
             pipeline.hset(r.key, r.field, r.value)
         });
-        await pipeline.exec()
+
+        const result = await pipeline.exec()
+
+        const failedRecords = result ? result?.filter(r => r[0]) : []
+        if (failedRecords.length > 0) {
+            // TODO:
+            // push to DLQ
+            console.log('Adding to DLQ..')
+        }
     }
 
     private key({ type, userId }: Attendance) {

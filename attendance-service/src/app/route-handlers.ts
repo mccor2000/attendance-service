@@ -40,7 +40,7 @@ export const uploadImageHandler = async ({ log, multipartErrors }: FastifyInstan
             return reply.send(new FilesLimitError());
         }
 
-        return reply.send()
+        return reply.send(data.filename)
     } catch (err) {
         log.error(err)
         return reply.send(err)
