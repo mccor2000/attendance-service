@@ -1,23 +1,83 @@
 version: '3.8'
 services: 
 
-  redis:
-    container_name: redis
-    image: redis
+  attd-service:
+    container_name: attd-service
+    build: 
+      context: ./attendance-service
     ports:
-      - 6379:6379
+      - 8080:8080
+    environment:
+      KAFKA_BROKER: broker:9092
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - broker
+      - redis
+
+  dashboard-service:
+    container_name: dashboard-service
+    build: 
+      context: ./dashboard-service
+    ports:
+      - 8081:8081
+    environment:
+      PORT: 8081
+      KAFKA_BROKER: broker:9092
+      MONGO_URL: mongodb://mongo:27017
+    depends_on:
+      - broker
+      - mongo
+
+  # tasks:
+  #   container_name: tasks
+  #   build: 
+  #     context: ./tasks
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     KAFKA_BROKER: broker:9092
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #   depends_on:
+  #     - broker
+  #     - redis
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports: 
+      - 3000:3000
+    restart: unless-stopped
+    # volumes:
+    #   # - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    #   - grafana-data:/var/lib/grafana
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
 
   mongo:
-    container_name: mongo-app
+    container_name: mongo
     image: mongo:4.2.23-bionic
+    restart: always
+
+  broker:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka-broker
+    depends_on:
+      - zookeeper
     environment:
-      MONGO_INITDB_ROOT_USERNAME: mccorby
-      MONGO_INITDB_ROOT_PASSWORD: mccorby
-      MONGO_INITDB_DATABASE: attendance
-    ports:
-      - 27017:27017
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
@@ -25,19 +85,6 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-
-  broker:
-    image: confluentinc/cp-kafka:7.3.0
-    container_name: kafka-broker
-    ports:
-      - 9092:9092
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  
+volumes:
+  grafana-data:

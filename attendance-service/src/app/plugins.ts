@@ -24,8 +24,8 @@ export const auth = fp(async (fastify: FastifyInstance, _opts) => {
 export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
     const client = new Kafka({
         clientId: KAFKA_CLIENT_ID,
-        brokers: ['127.0.0.1:9092'],
-        logLevel: logLevel.INFO
+        brokers: [process.env.KAFKA_BROKER || '127.0.0.1:9092'],
+        logLevel: logLevel.INFO,
     })
 
     const admin = client.admin()
@@ -45,7 +45,7 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
     const producer = client.producer({
         allowAutoTopicCreation: false,
         retry: {
-            retries: 3,
+            retries: 5,
             initialRetryTime: 3000
         },
         transactionTimeout: 30000
@@ -56,7 +56,10 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
 })
 
 export const repo = fp(async (fastify: FastifyInstance, _opts) => {
-    const client = new Redis({ host: 'localhost', port: 6379 })
+    const client = new Redis({
+        host: process.env.REDIS_HOST || '127.0.0.1',
+        port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379
+    })
     const repo = new AttendanceRepo(client)
 
     fastify.addHook('onClose', (_fastify, done) => {

@@ -25,8 +25,10 @@ export const bootstrap = async () => {
   useRouter(app)
 
   try {
+    const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080
+
     await app.ready()
-    await app.listen({ host: '0.0.0.0', port: 8080 })
+    await app.listen({ host: '0.0.0.0', port: PORT })
     console.log(`Application bootstraped successfully!`)
   } catch (err) {
     app.log.error(err)

@@ -11,8 +11,8 @@ export class AttendanceRepo implements IRepo {
 
     constructor(private readonly client: Redis) {
         this.bulk = new Bulk(
-            3000, 
-            5 * 1000, 
+            3000,       // buffer 1000 records and then write
+            5 * 1000,   // or automatically write in 5 seconds 
             this.pipeline.bind(this)
         )
     }
