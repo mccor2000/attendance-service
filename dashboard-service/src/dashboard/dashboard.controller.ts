@@ -7,15 +7,15 @@ export class DashboardController {
         private readonly service: DashboardService
     ) {}
 
-    @Get('reports')
-    getReports() {
-        return this.service.getReports()
+    @Get('schools')
+    getOverallSchoolReports() {
+        return this.service.getOverallSchoolReports()
     }
 
-    @Get('reports/today')
+    @Get('schools/:id')
     getTodayReports(
         @Param('id') id: string 
     ) {
-        return this.service.getSchoolReports(id)
+        return this.service.getDetailSchoolReports(id)
     }
 }
