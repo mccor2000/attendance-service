@@ -2,7 +2,7 @@ import { MongoClient, ObjectId } from "mongodb";
 
 (async () => {
     // Connection URL
-    const uri = "mongodb://admin:password@localhost:27017";
+    const uri = "mongodb://localhost:27017";
     const client = new MongoClient(uri);
 
     const NUM_OF_SCHOOLS = 1000
@@ -15,23 +15,25 @@ import { MongoClient, ObjectId } from "mongodb";
         const collections = await client.db('attendance').collections()
         await Promise.all(collections.map(c => c.drop()))
 
-        const userCollection = client.db("attendance").collection("users");
-        const schoolCollection = client.db("attendance").collection("schools");
+        const userCollection = client.db().collection("users");
+        const schoolCollection = client.db().collection("schools");
 
         let schools: { _id: ObjectId, name: string }[] = [];
         for (let i = 0; i < NUM_OF_SCHOOLS; i++) {
             schools.push({ _id: new ObjectId(ObjectId.generate()), name: String(i) })
         }
 
-        const result = await schoolCollection.insertMany(schools);
+        const result = await schoolCollection.bulkWrite(schools.map(s => ({
+            insertOne: { document: s }
+        })));
         console.log(`Inserted ${result.insertedCount} schools`)
 
         let insertedStudents = 0
         // 50000 records per each bulk
-        for (let i = 0; i < schools.length; i+=10) {
-            let users: { _id: ObjectId, schoolId: ObjectId, name: string}[] = []
+        for (let i = 0; i < schools.length; i += 10) {
+            let users: { _id: ObjectId, schoolId: ObjectId, name: string }[] = []
 
-            for (let j = i; j < i+10; j++) {
+            for (let j = i; j < i + 10; j++) {
                 if (j < schools.length) {
                     users.push(
                         ...Array(NUM_OF_STUDENTS_PER_SCHOOL).fill(0).map(idx => ({
@@ -42,7 +44,11 @@ import { MongoClient, ObjectId } from "mongodb";
                     )
                 }
             }
-            const result = await userCollection.insertMany(users);
+            const result = await userCollection.bulkWrite(users.map(u => ({
+                insertOne: {
+                    document: u
+                }
+            })));
             insertedStudents += result.insertedCount
         }
         console.log(`Inserted ${insertedStudents} users`)

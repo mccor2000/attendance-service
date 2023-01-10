@@ -1,32 +1,36 @@
-import { randomInt, randomUUID } from "crypto";
-import { ObjectId } from "mongodb";
+import { randomInt } from "crypto";
+import { MongoClient, ObjectId } from "mongodb";
 
 const autocannon = require('autocannon')
 
-const SchoolIds = Array(1000).fill(0).map(() => randomUUID())
-const Type = ['checkin', 'checkout']
 
-const randomPayload = () => {
-    return JSON.stringify({
-            type: Type[randomInt(2)],
+const bench = async () => {
+    const client = new MongoClient("mongodb://localhost:27017");
+
+    const randomPayload = () => {
+        return JSON.stringify({
+            type: 'checkin',
             timestamp: Date.now(),
             image: "",
             userId: new ObjectId(ObjectId.generate()),
-            schoolId: SchoolIds[randomInt(1000)],
+            schoolId: schools[randomInt(1000)]._id.toString(),
             temperature: randomInt(34, 42),
-    })
-}
+        })
+    }
+    const schools = await client.db()
+        .collection('schools')
+        .find({}, { projection: { _id: 1 } })
+        .toArray()
 
-const startBench = () => {
+
     const instance = autocannon({
         url: 'http://localhost:8080/attendances',
-        connections: 500,
+        connections: 100,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        overallRate: 1000,
-        duration: 240,
+        amount: 100000,
         body: randomPayload(),
     })
 
@@ -41,4 +45,4 @@ const startBench = () => {
     });
 }
 
-startBench()
+bench().then(()=>{}).catch(console.log)
