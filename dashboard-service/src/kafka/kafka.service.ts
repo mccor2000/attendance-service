@@ -13,12 +13,16 @@ export type KafkaConsumerOpts = {
 export class KafkaService implements OnApplicationShutdown {
     private readonly consumers: KafkaConsumer[] = []
 
-    async onApplicationShutdown(signal?: string) {
+    async onApplicationShutdown() {
         await Promise.all(this.consumers.map(c => c.disconnect()))
     }
 
     async consume({ topic, config, onMessages }: KafkaConsumerOpts ): Promise<void> {
-        const consumer = new KafkaConsumer(topic, config, "127.0.0.1:9092")
+        const consumer = new KafkaConsumer(
+            topic, 
+            config, 
+            process.env.KAFKA_BROKER || "127.0.0.1:9092"
+        )
 
         await consumer.connect()
         await consumer.consume(onMessages)

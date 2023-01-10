@@ -34,7 +34,8 @@ export class KafkaConsumer {
         await this.consumer.run({
             eachBatch: async ({ batch }) => {
                 await onMessage(batch.messages)
-            }
+            },
+            partitionsConsumedConcurrently: 3
         })
     }
 }

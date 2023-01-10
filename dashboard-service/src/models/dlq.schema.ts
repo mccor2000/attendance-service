@@ -8,8 +8,8 @@ export class DLQ {
     @Prop()
     type: string
 
-    @Prop()
-    letters: any[]
+    @Prop({ type: Object })
+    data: any
 }
 
 export const DLQSchema = SchemaFactory.createForClass(DLQ)

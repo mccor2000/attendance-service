@@ -7,16 +7,20 @@ import { DLQ, DLQSchema } from './models/dlq.schema';
 
 import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { Report, ReportSchema } from './models/report.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: School.name, schema: SchoolSchema },
+      { name: Report.name, schema: ReportSchema },
       { name: DLQ.name, schema: DLQSchema },
     ]),
-    MongooseModule.forRoot('mongodb://mccorby:mccorby@localhost:27017'),
+    MongooseModule.forRoot(process.env.MONGO_URL || 'mongodb://localhost:27017'),
     KafkaModule,
+    DashboardModule,
   ],
   providers: [AppService],
 })

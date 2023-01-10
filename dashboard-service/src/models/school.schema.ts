@@ -9,19 +9,11 @@ export class School {
     name: string
 
     @Prop({ type: Object })
-    liveReport: {
+    todayReport: {
         totalCheckIns: number,
         totalCheckOuts: number,
         totalFeversDetect: number
     }
-
-    @Prop({ default: [] })
-    reports: {
-        date: Date,
-        totalCheckIns: number,
-        totalCheckOuts: number,
-        totalFeversDetect: number
-    }[]
 }
 
 export const SchoolSchema = SchemaFactory.createForClass(School)
