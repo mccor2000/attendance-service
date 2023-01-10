@@ -4,7 +4,7 @@ import { IRepo } from "../core/ports";
 import { Attendance, AttendanceType } from '../core/domain';
 import { Bulk } from '../utils/bulk';
 
-export type Record = { key: string, field: string, value: string }
+export type Record = { key: string, field: string, value: any}
 
 export class AttendanceRepo implements IRepo {
     private bulk: Bulk<Record>
@@ -39,7 +39,7 @@ export class AttendanceRepo implements IRepo {
         this.bulk.push({
             key,
             field,
-            value: this.value(data)
+            value: true
         })
     }
 
