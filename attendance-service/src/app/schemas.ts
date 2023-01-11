@@ -26,16 +26,6 @@ export const UploadImageRequest: JSONSchemaType<{ file: string }> = {
     additionalProperties: false
 }
 
-export const UploadImageResponse: JSONSchemaType<{ imageUrl: string }> = {
-    $id: 'uploadImageResponse',
-    type: 'object',
-    required: ['imageUrl'],
-    properties: {
-        imageUrl: { type: 'string' }
-    },
-    additionalProperties: false
-}
-
 export const ValidationException = {
     $id: 'validationError',
     type: 'object',

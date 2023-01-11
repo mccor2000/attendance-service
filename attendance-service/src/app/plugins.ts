@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { Kafka, logLevel } from 'kafkajs';
+import { Kafka } from 'kafkajs';
 import Redis from 'ioredis';
 import fp from "fastify-plugin";
 import jwt from '@fastify/jwt';
 
 import { AttendanceRepo } from '../infra/redis-repo';
 import { KafkaPublisher } from '../infra/kafka-publisher';
-import { IRepo } from '../core/ports';
-import { KAFKA_CLIENT_ID, KAFKA_TOPIC } from '../utils/constants';
+import { KAFKA_TOPIC } from '../constants';
+import config from '../config';
 
 export const auth = fp(async (fastify: FastifyInstance, _opts) => {
     fastify.register(jwt, { secret: 'secret' })
@@ -22,14 +22,32 @@ export const auth = fp(async (fastify: FastifyInstance, _opts) => {
 })
 
 export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
-    const client = new Kafka({
-        clientId: KAFKA_CLIENT_ID,
-        brokers: [process.env.KAFKA_BROKER || '127.0.0.1:9092'],
-        logLevel: logLevel.INFO,
-    })
+    const client = new Kafka(config.kafka.client)
 
+    await createKafkaTopic(client)
+
+    const producer = client.producer(config.kafka.producer)
+    await producer.connect()
+
+    fastify.decorate('publisher', new KafkaPublisher(producer))
+})
+
+export const repo = fp(async (fastify: FastifyInstance, _opts) => {
+    const client = new Redis(config.redis)
+
+    fastify.addHook('onClose', (_fastify, done) => {
+        client.disconnect()
+        done()
+    })
+    fastify.decorate('repo', new AttendanceRepo(client))
+})
+
+
+const createKafkaTopic = async (client: Kafka): Promise<void> => {
     const admin = client.admin()
+
     await admin.connect()
+
     const topics = await admin.listTopics()
     if (!topics.includes(KAFKA_TOPIC)) {
         await admin.createTopics({
@@ -40,32 +58,6 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
             }]
         })
     }
+
     await admin.disconnect()
-
-    const producer = client.producer({
-        allowAutoTopicCreation: false,
-        retry: {
-            retries: 5,
-            initialRetryTime: 3000
-        },
-        transactionTimeout: 30000
-    })
-    await producer.connect()
-
-    fastify.decorate('publisher', new KafkaPublisher(producer))
-})
-
-export const repo = fp(async (fastify: FastifyInstance, _opts) => {
-    const client = new Redis({
-        host: process.env.REDIS_HOST || '127.0.0.1',
-        port: process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379
-    })
-    const repo = new AttendanceRepo(client)
-
-    fastify.addHook('onClose', (_fastify, done) => {
-        client.disconnect()
-        done()
-    })
-
-    fastify.decorate<IRepo>('repo', repo)
-})
+}

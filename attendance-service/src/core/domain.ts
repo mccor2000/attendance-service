@@ -7,8 +7,6 @@ export interface ICreateAttendance {
     schoolId: string,
 }
 
-export const AVERAGE_TEMPERATURE = 37
-
 export enum AttendanceType {
     CHECKIN = 'checkin',
     CHECKOUT = 'checkout',
@@ -21,13 +19,6 @@ export type Attendance = {
     image: string,
     temperature: number,
     timestamp: number,
-}
-
-export type SchoolReport = {
-    schoolId: string,
-    present: number,
-    absent: number,
-    totalFevers: number
 }
 
 export abstract class DomainException {

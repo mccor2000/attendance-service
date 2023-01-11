@@ -18,10 +18,11 @@ export const createAttendanceHandler = async (
         repo.save(attd)
         publisher.produce(JSON.stringify(attd))
 
-        return reply.send()
+        reply.send()
     } catch (err) {
         if (err instanceof DomainException) {
-            return reply.status(400).send(err)
+            reply.status(400).send(err)
+            return
         }
         log.error(err)
         return reply.send(err)

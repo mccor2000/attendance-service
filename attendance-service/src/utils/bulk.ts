@@ -23,7 +23,6 @@ export class Bulk<T> {
         )
     }
 
-
     push(item: T) {
         this.batch.push(item)
         if (this.batch.length >= this.size) {

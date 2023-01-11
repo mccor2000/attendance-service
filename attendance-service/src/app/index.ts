@@ -4,32 +4,31 @@ import cors from '@fastify/cors'
 import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
 
-import { auth, repo, publisher } from "./plugins";
+import config from "../config";
+import { repo, publisher } from "./plugins";
 import { IPublisher, IRepo } from "../core/ports";
-import { createAttendanceHandler, uploadImageHandler } from "./route-handlers";
-import { CreateAttendanceRequest, UploadImageRequest, UploadImageResponse } from "./schemas";
 import { ICreateAttendance } from "../core/domain";
+import { createAttendanceHandler, uploadImageHandler } from "./route-handlers";
+import { CreateAttendanceRequest, UploadImageRequest } from "./schemas";
+
 
 export type FastifyWithDecorators = FastifyInstance & {
   repo: IRepo
   publisher: IPublisher,
 }
 
-
 export const bootstrap = async () => {
-  const app = fastify({ logger: false })
-
-  usePlugins(app)
-  useSchemas(app)
-  // @ts-ignore
-  useRouter(app)
+  const app = fastify({ logger: { level: 'error' }})
 
   try {
-    const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080
+    usePlugins(app)
+    useSchemas(app)
+    // @ts-ignore
+    useRouter(app)
 
     await app.ready()
-    await app.listen({ host: '0.0.0.0', port: PORT })
-    console.log(`Application bootstraped successfully!`)
+    await app.listen(config.server)
+    app.log.info(`Application bootstraped successfully!`)
   } catch (err) {
     app.log.error(err)
     process.exit(1)
@@ -50,7 +49,6 @@ const usePlugins = async (fastify: FastifyInstance) => {
 const useSchemas = (fastify: FastifyInstance) => {
   fastify.addSchema(CreateAttendanceRequest)
   fastify.addSchema(UploadImageRequest)
-  fastify.addSchema(UploadImageResponse)
 }
 
 const useRouter = (fastify: FastifyWithDecorators) => {
