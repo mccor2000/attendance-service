@@ -34,8 +34,10 @@ services:
     container_name: dashboard-service
     build: 
       context: ./dashboard-service
+    ports:
+      - 8081:8081
     environment:
-      PORT: 8080
+      PORT: 8081
       KAFKA_BROKER: broker:9092
       MONGO_URL: mongodb://mongo:27017
     depends_on:

@@ -17,13 +17,19 @@ export class AppService {
     private readonly mongo: Connection
   ) { }
 
-  // 0:0 every day
-  @Cron('0 0 0 * * *')
+  // every hours from Monday to Friday
+  @Cron('0 0 * * * 1-5')
   async processDeadLetterQueue(): Promise<void> {
     try {
       await AsyncRetry(
         async () => {
-          // TODO:
+          const attendances = await this.mongo.collection('dlq').find().toArray()
+          this.logger.log(`Process ${attendances.length} attendances in DLQ...`)
+
+          await Promise.all([
+            this.mongo.collection('attendances').bulkWrite(this.upsertAttendancesQuery(attendances)),
+            this.mongo.collection('reports').bulkWrite(this.upsertReportsQuery(attendances))
+          ])
         }, {
         onRetry: (err, attempt) => {
           this.logger.error(`Error processing DLQ, executing retry ${attempt}/3`, err)
@@ -36,6 +42,7 @@ export class AppService {
     }
   }
 
+  // everyday 
   @Cron('0 0 0 * * *')
   async flushRedis(): Promise<void> {
     try {
@@ -53,5 +60,45 @@ export class AppService {
       this.logger.error('Error flushing redis: ', err)
       // further operations. e.g: emailing,..
     }
+  }
+
+  upsertAttendancesQuery(attds: any[]) {
+    return attds.map(attd => ({
+      updateOne: {
+        filter: {
+          _id: attd.userId,
+          date: `${new Date(attd.timestamp).toLocaleDateString()}Z`
+        },
+        update: {
+          '$set': {
+            [attd.type]: {
+              timestamp: attd.timestamp,
+              temperature: attd.temperature,
+              image: attd.image
+            }
+          }
+        },
+        upsert: true
+      }
+    }))
+  }
+
+  upsertReportsQuery(attds: any[]): Array<any> {
+    return attds.map(({ schoolId, timestamp, type, temperature }) => ({
+      updateOne: {
+        filter: {
+          school: schoolId,
+          date: `${new Date(timestamp).toLocaleDateString()}Z`
+        },
+        update: {
+          '$inc': {
+            "totalCheckIns": type === 'checkin' ? 1 : 0,
+            "totalCheckOuts": type === 'checkout' ? 1 : 0,
+            "totalFeversDetect": temperature >= 38 ? 1 : 0,
+          }
+        },
+        upsert: true
+      }
+    }))
   }
 }
