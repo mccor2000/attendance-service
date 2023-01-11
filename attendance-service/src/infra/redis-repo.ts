@@ -49,14 +49,7 @@ export class AttendanceRepo implements IRepo {
             pipeline.hset(r.key, r.field, r.value)
         });
 
-        const result = await pipeline.exec()
-
-        const failedRecords = result ? result?.filter(r => r[0]) : []
-        if (failedRecords.length > 0) {
-            // TODO:
-            // push to DLQ
-            console.log('Adding to DLQ..')
-        }
+        await pipeline.exec()
     }
 
     private key({ type, userId }: Attendance) {
@@ -64,9 +57,5 @@ export class AttendanceRepo implements IRepo {
             `${type}:${userId.slice(0, userId.length - 2)}`,
             userId.slice(-2)
         ]
-    }
-
-    private value({ schoolId, timestamp, temperature, image }: Attendance) {
-        return `${schoolId}:${timestamp}:${image}:${temperature}`
     }
 }

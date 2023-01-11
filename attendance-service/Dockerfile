@@ -2,6 +2,8 @@ FROM node:16-alpine AS base
 
 WORKDIR /usr/app
 
+RUN mkdir upload
+
 COPY package.json yarn.lock ./
 
 # -------------------------------

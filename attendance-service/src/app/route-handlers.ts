@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 import { createWriteStream } from "fs";
+import path from "path";
 import { pipeline as pump } from "stream/promises";
 
 import { FastifyWithDecorators } from ".";
@@ -28,19 +29,17 @@ export const createAttendanceHandler = async (
 }
 
 export const uploadImageHandler = async ({ log, multipartErrors }: FastifyInstance, request: FastifyRequest, reply: FastifyReply) => {
-    const { InvalidMultipartContentTypeError, FilesLimitError } = multipartErrors
+    const { InvalidMultipartContentTypeError } = multipartErrors
     try {
         const data = await request.file()
         if (!data) {
             return reply.send(new InvalidMultipartContentTypeError())
         }
 
-        await pump(data.file, createWriteStream(data.filename))
-        if (data.file.truncated) {
-            return reply.send(new FilesLimitError());
-        }
+        const filepath = path.resolve('/usr/app/upload/', data.filename)
+        pump(data.file, createWriteStream(filepath))
 
-        return reply.send(data.filename)
+        return reply.send({ image: filepath })
     } catch (err) {
         log.error(err)
         return reply.send(err)

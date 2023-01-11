@@ -10,8 +10,8 @@ export class KafkaPublisher implements IPublisher {
 
     constructor(private readonly kafka: Producer) {
         this.bulk = new Bulk(
-            3000, 
-            5 * 1000, 
+            1000,
+            5 * 1000,
             this.publish.bind(this)
         )
     }
@@ -21,10 +21,12 @@ export class KafkaPublisher implements IPublisher {
     }
 
     async publish(batch: Message[]) {
-        await this.kafka.send({
-            topic: KAFKA_TOPIC,
+        await this.kafka.sendBatch({
             compression: CompressionTypes.GZIP,
-            messages: batch
+            topicMessages: [{
+                topic: KAFKA_TOPIC,
+                messages: batch
+            }]
         })
     }
 }
