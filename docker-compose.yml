@@ -1,6 +1,21 @@
 version: '3.8'
 
 services: 
+  # resulted a lot of 499 status code error ???
+  # client timeout, kinda nginx specific
+  # nginx:
+  #   image: nginx:stable-alpine
+  #   container_name: nginx
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   restart: always
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - ./ssl:/etc/nginx/ssl/:ro
+  #   depends_on:
+  #     - attd-service
+
   attd-service:
     container_name: attd-service
     build: 

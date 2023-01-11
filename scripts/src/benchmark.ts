@@ -40,9 +40,15 @@ const bench = async () => {
 
     autocannon.track(instance, { renderResultTable: true });
 
+    instance.on('done', () => {
+        return
+    })
+
     process.once('SIGINT', () => {
         instance.stop();
     });
 }
 
-bench().then(()=>{}).catch(console.log)
+bench().then(()=>{
+    
+}).catch(console.log)

@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "benchmark": "ts-node src/benchmark.ts",
+    "seed": "ts-node src/seed.ts"
+  },
   "dependencies": {
     "autocannon": "^7.10.0",
     "faker": "^6.6.6",
