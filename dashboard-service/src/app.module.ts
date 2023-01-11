@@ -1,20 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { School, SchoolSchema } from './models/school.schema';
-import { User, UserSchema } from './models/user.schema';
+import { Attendance, AttendanceSchema } from './models/attendances.schema';
+import { Report, ReportSchema } from './models/report.schema';
 import { DLQ, DLQSchema } from './models/dlq.schema';
 
 import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { Report, ReportSchema } from './models/report.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: School.name, schema: SchoolSchema },
+      { name: Attendance.name, schema: AttendanceSchema },
       { name: Report.name, schema: ReportSchema },
       { name: DLQ.name, schema: DLQSchema },
     ]),

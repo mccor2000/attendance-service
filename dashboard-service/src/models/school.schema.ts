@@ -7,13 +7,6 @@ export type SchoolDocument = HydratedDocument<School>
 export class School {
     @Prop()
     name: string
-
-    @Prop({ type: Object })
-    todayReport: {
-        totalCheckIns: number,
-        totalCheckOuts: number,
-        totalFeversDetect: number
-    }
 }
 
 export const SchoolSchema = SchemaFactory.createForClass(School)

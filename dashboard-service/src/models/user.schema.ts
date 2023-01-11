@@ -8,16 +8,8 @@ export class User {
     @Prop({ required: true })
     name: string
 
-    @Prop({ default: [] })
-    attendances: {
-        type: string,
-        timestamp: number,
-        temperature: number,
-        image: string,
-    }[]
-
-    @Prop({ type: SchemaTypes.ObjectId, ref: 'School'})
-    schoolId: string
+    @Prop({ type: SchemaTypes.ObjectId, ref: 'School', index: true})
+    school: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

@@ -4,17 +4,17 @@ import { Model } from 'mongoose';
 
 import { KAFKA_GROUP_ID, KAFKA_SERVICE, KAFKA_TOPIC } from './constants';
 import { KafkaService } from './kafka/kafka.service';
-import { User, UserDocument } from './models/user.schema';
 import { DLQ, DLQDocument } from './models/dlq.schema';
 import { Report, ReportDocument } from './models/report.schema';
+import { Attendance, AttendanceDocument } from './models/attendances.schema';
 
 @Injectable()
 export class AppService implements OnModuleInit {
   private readonly logger: Logger = new Logger(AppService.name)
 
   constructor(
-    @InjectModel(User.name)
-    private readonly userModel: Model<UserDocument>,
+    @InjectModel(Attendance.name)
+    private readonly attendanceModel: Model<AttendanceDocument>,
     @InjectModel(Report.name)
     private readonly reportModel: Model<ReportDocument>,
     @InjectModel(DLQ.name)
@@ -28,32 +28,28 @@ export class AppService implements OnModuleInit {
     await this.kafka.consume({
       topic: { topics: [KAFKA_TOPIC] },
       config: {
+        allowAutoTopicCreation: false,
         groupId: KAFKA_GROUP_ID,
-        rebalanceTimeout: 1000,
-        maxBytes: 5000000 
       },
       onMessages: async (batch): Promise<void> => {
         const attendances = batch.map((msg) => JSON.parse(msg.value as string))
         this.logger.log(`Process ${attendances.length} attendances...`)
 
         try {
-          const updateUsersQuery = this.updateUsersQuery(attendances)
-          const updateReportsQuery = this.updateReportsQuery(attendances)
-
           await Promise.all([
-            this.userModel.bulkWrite(updateUsersQuery),
-            this.reportModel.bulkWrite(updateReportsQuery)
+            this.attendanceModel.bulkWrite(this.upsertAttendancesQuery(attendances)),
+            this.reportModel.bulkWrite(this.upsertReportsQuery(attendances))
           ])
         } catch (err) {
           this.logger.log(`Error consuming message. Adding ${attendances.length} to DLQ...`)
           this.logger.error(err)
-          await this.addToDLQ(attendances)
+          this.addToDLQ(attendances)
         }
       }
     })
   }
 
-  updateUsersQuery(attds: {
+  upsertAttendancesQuery(attds: {
     userId: string,
     type: string,
     timestamp: number,
@@ -62,22 +58,25 @@ export class AppService implements OnModuleInit {
   }[]): Array<any> {
     return attds.map(attd => ({
       updateOne: {
-        filter: { _id: attd.userId },
+        filter: {
+          _id: attd.userId,
+          date: `${new Date(attd.timestamp).toLocaleDateString()}Z`
+        },
         update: {
-          '$addToSet': {
-            attendances: {
-              type: attd.type,
+          '$set': {
+            [attd.type]: {
               timestamp: attd.timestamp,
               temperature: attd.temperature,
               image: attd.image
             }
           }
         },
+        upsert: true
       }
     }))
   }
 
-  updateReportsQuery(attds: {
+  upsertReportsQuery(attds: {
     type: string,
     temperature: number,
     timestamp: number,
@@ -103,12 +102,7 @@ export class AppService implements OnModuleInit {
 
   async addToDLQ(attds: any[]) {
     await this.dqlModel.bulkWrite(attds.map(attd => ({
-      insertOne: {
-        document: {
-          type: 'kafka-consumer',
-          data: attd,
-        }
-      }
+      insertOne: { document: attd }
     })))
   }
 }

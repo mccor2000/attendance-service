@@ -16,7 +16,7 @@ export class KafkaConsumer {
         this.client = new Kafka({
             clientId: KAFKA_CLIENT_ID,
             brokers: [broker],
-            retry: { retries: 5 }
+            retry: { retries: 5 },
         });
         this.consumer = this.client.consumer(config)
     }
@@ -32,10 +32,10 @@ export class KafkaConsumer {
     async consume(onMessage: (msg: Message[]) => Promise<void>): Promise<void> {
         await this.consumer.subscribe(this.topic);
         await this.consumer.run({
+            partitionsConsumedConcurrently: 3,
             eachBatch: async ({ batch }) => {
-                await onMessage(batch.messages)
+                onMessage(batch.messages)
             },
-            partitionsConsumedConcurrently: 3
         })
     }
 }
