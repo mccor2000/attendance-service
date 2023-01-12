@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { Attendance, AttendanceSchema } from './models/attendances.schema';
-import { Report, ReportSchema } from './models/report.schema';
-import { DLQ, DLQSchema } from './models/dlq.schema';
+import { Attendance, AttendanceSchema } from './schemas/attendances.schema';
+import { Report, ReportSchema } from './schemas/report.schema';
+import { DLQ, DLQSchema } from './schemas/dlq.schema';
 
 import { AppService } from './app.service';
 import { KafkaModule } from './kafka/kafka.module';

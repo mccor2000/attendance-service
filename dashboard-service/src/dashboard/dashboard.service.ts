@@ -1,8 +1,8 @@
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
-import { ReportDocument } from "src/models/report.schema";
-import { SchoolDocument } from "src/models/school.schema";
+import { ReportDocument } from "src/schemas/report.schema";
+import { SchoolDocument } from "src/schemas/school.schema";
 
 export class DashboardService {
     constructor(
@@ -14,9 +14,7 @@ export class DashboardService {
 
     async getOverallSchoolReports() {
         return this.reportModel.find(
-            {
-                "date": { "$gt": new Date(Date.now() - 24 * 3600 * 1000) }
-            },
+            { "date": { "$gt": new Date(Date.now() - 24 * 3600 * 1000) } },
             '_id date school totalCheckIns totalCheckOuts totalFeversDetect',
             {
                 populate: 'school',

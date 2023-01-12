@@ -3,6 +3,11 @@ import { HydratedDocument, SchemaTypes } from "mongoose";
 
 export type AttendanceDocument = HydratedDocument<Attendance>
 
+export enum AttendanceType {
+    CHECKIN = 'checkin',
+    CHECKOUT = 'checkout',
+}
+
 @Schema({ collection: 'attendances' })
 export class Attendance {
     @Prop({ type: SchemaTypes.ObjectId, ref: 'User' })
@@ -12,14 +17,14 @@ export class Attendance {
     date: Date
 
     @Prop({ type: Object })
-    checkin: {
+    [AttendanceType.CHECKIN]: {
         timestamp: number
         temperature: number
         image: string
     }
 
     @Prop({ type: Object })
-    checkout: {
+    [AttendanceType.CHECKOUT]: {
         timestamp: number
         temperature: number
         image: string

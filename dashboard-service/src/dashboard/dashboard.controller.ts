@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, Query } from "@nestjs/common";
 import { DashboardService } from "./dashboard.service";
 
 @Controller()
@@ -13,8 +13,10 @@ export class DashboardController {
     }
 
     @Get('schools/:id')
-    getTodayReports(
-        @Param('id') id: string 
+    getDetailsSchoolReports(
+        @Param('id') id: string,
+        // @Query('from') from: Date,
+        // @Query('to') to: Date,
     ) {
         return this.service.getDetailSchoolReports(id)
     }

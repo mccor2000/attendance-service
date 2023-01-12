@@ -1,4 +1,3 @@
-
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, SchemaTypes } from "mongoose";
 import { SchoolDocument } from "./school.schema";
@@ -13,13 +12,13 @@ export class Report {
     @Prop({ type: Date })
     date: Date
 
-    @Prop()
+    @Prop({ default: 0 })
     totalCheckIns: number
 
-    @Prop()
+    @Prop({ default: 0 })
     totalCheckOuts: number
 
-    @Prop()
+    @Prop({ default: 0 })
     totalFeversDetect: number
 }
 

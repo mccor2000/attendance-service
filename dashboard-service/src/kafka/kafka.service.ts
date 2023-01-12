@@ -1,6 +1,6 @@
 import { OnApplicationShutdown } from "@nestjs/common";
-import { ConsumerConfig, ConsumerSubscribeTopics, Message } from "kafkajs";
-import { KafkaConsumer } from "./kafka.consumer";
+import { Kafka, Consumer, ConsumerConfig, ConsumerSubscribeTopics, Message } from "kafkajs";
+import { KAFKA_CLIENT_ID } from "src/constants";
 
 
 export type KafkaConsumerOpts = {
@@ -9,23 +9,34 @@ export type KafkaConsumerOpts = {
     onMessages: (msgs: Message[]) => Promise<void>
 }
 
-
 export class KafkaService implements OnApplicationShutdown {
-    private readonly consumers: KafkaConsumer[] = []
+    private readonly client: Kafka
+    private readonly consumers: Consumer[] = []
 
     async onApplicationShutdown() {
         await Promise.all(this.consumers.map(c => c.disconnect()))
     }
 
-    async consume({ topic, config, onMessages }: KafkaConsumerOpts ): Promise<void> {
-        const consumer = new KafkaConsumer(
-            topic, 
-            config, 
-            process.env.KAFKA_BROKER || "127.0.0.1:9092"
-        )
+    constructor() {
+        this.client = new Kafka({
+            clientId: KAFKA_CLIENT_ID,
+            brokers: [process.env.KAFKA_BROKER || '127.0.0.1:9092'],
+            retry: { retries: 5 },
+        });
+    }
+
+    async consume({ topic, config, onMessages }: KafkaConsumerOpts): Promise<void> {
+        const consumer = this.client.consumer(config)
 
         await consumer.connect()
-        await consumer.consume(onMessages)
+        await consumer.subscribe(topic)
+        await consumer.run({
+            partitionsConsumedConcurrently: 3,
+            eachBatch: async ({ batch }) => {
+                onMessages(batch.messages)
+            },
+        })
+
         this.consumers.push(consumer)
     }
 }

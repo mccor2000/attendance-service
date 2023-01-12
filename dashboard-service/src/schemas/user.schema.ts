@@ -8,7 +8,7 @@ export class User {
     @Prop({ required: true })
     name: string
 
-    @Prop({ type: SchemaTypes.ObjectId, ref: 'School', index: true})
+    @Prop({ type: SchemaTypes.ObjectId, ref: 'School'})
     school: string
 }
 
