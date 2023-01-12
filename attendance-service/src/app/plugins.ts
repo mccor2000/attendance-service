@@ -29,6 +29,10 @@ export const publisher = fp(async (fastify: FastifyInstance, _opts) => {
     const producer = client.producer(config.kafka.producer)
     await producer.connect()
 
+    producer.on('producer.disconnect', () => {
+
+    })
+
     fastify.decorate('publisher', new KafkaPublisher(producer))
 })
 

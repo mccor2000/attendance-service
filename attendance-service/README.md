@@ -13,8 +13,6 @@ This application is build using the [Hexagonal architecture](https://en.wikipedi
  - [/core](./src/core) : Include domain entity, business logic, interfaces(ports) 
  - [/infra](./src/infra) : Provide infrastructures for database access, event publisher.
 
-For details implementation of how pieces work, please hava a brief look at unit tests.
-
 ## Run in local development
 ```
 $ yarn dev

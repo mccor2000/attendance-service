@@ -19,7 +19,7 @@ export default {
         producer: {
             allowAutoTopicCreation: false,
             retry: {
-                retries: 5,
+                retries: 10,
                 initialRetryTime: 3000
             },
         }

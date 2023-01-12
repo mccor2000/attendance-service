@@ -23,13 +23,16 @@ export class AppService {
     try {
       await AsyncRetry(
         async () => {
-          const attendances = await this.mongo.collection('dlq').find().toArray()
-          this.logger.log(`Process ${attendances.length} attendances in DLQ...`)
+          const letters = await this.mongo.collection('dlq').find().toArray()
+          if (letters.length === 0) return
 
+          this.logger.log(`Process ${letters.length} attendances in DLQ...`)
           await Promise.all([
-            this.mongo.collection('attendances').bulkWrite(this.upsertAttendancesQuery(attendances)),
-            this.mongo.collection('reports').bulkWrite(this.upsertReportsQuery(attendances))
+            this.mongo.collection('attendances').bulkWrite(this.upsertAttendancesQuery(letters)),
+            this.mongo.collection('reports').bulkWrite(this.upsertReportsQuery(letters))
           ])
+
+          await this.mongo.collection('dlq').deleteMany({ _id: { $in: letters.map(l => l._id), }})
         }, {
         onRetry: (err, attempt) => {
           this.logger.error(`Error processing DLQ, executing retry ${attempt}/3`, err)

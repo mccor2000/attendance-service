@@ -50,5 +50,5 @@ const bench = async () => {
 }
 
 bench().then(()=>{
-    
+    return
 }).catch(console.log)

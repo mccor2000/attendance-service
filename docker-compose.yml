@@ -1,8 +1,8 @@
 version: '3.8'
 
 services: 
-  # resulted a lot of 499 status code error ???
-  # client timeout, kinda nginx specific
+  # result a lot of 499 errors ???
+  # client timeout
   # nginx:
   #   image: nginx:stable-alpine
   #   container_name: nginx
@@ -61,7 +61,12 @@ services:
     ports: 
       - 3000:3000
     restart: unless-stopped
+    environment:
+      - GF_INSTALL_PLUGINS=marcusolsson-json-datasource
     volumes:
+      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./grafana/attendances-dashboard.json:/etc/dashboards/attendances-dashboard.json
       - grafana-data:/var/lib/grafana
 
   redis:
